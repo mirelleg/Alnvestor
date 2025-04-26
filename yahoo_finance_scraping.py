@@ -6,6 +6,7 @@ def stock_ticker_information(stock_ticker):
     stock_information = yfinance.Ticker(stock_ticker)
 
     stock_news_articles = stock_information.get_news(count=100)
+    
     if not stock_news_articles:
         print("There was no news found on this stock")
         return []
@@ -13,9 +14,16 @@ def stock_ticker_information(stock_ticker):
     stock_article_titles = []
     stock_article_summaries = []
     stock_article_info = []
+    i=0
     for article in stock_news_articles:
         title = ""
         summary = ""
+        url = ""
+        try:
+            url = article['content']['clickThroughUrl']['url']
+        except Exception as e:
+            url = "" # in the case where a url cant be found
+         
         try:
             title = article['content']['title']
         except KeyError:
@@ -28,7 +36,7 @@ def stock_ticker_information(stock_ticker):
         
         stock_article_titles.append(title)
         stock_article_summaries.append(summary)
-        stock_article_info.append("TITLE: " + title + " ; SUMMARY: " + summary)
+        stock_article_info.append("URL: " + url + " ; TITLE: " + title + " ; SUMMARY: " + summary)
 
     return stock_article_info
     
@@ -43,8 +51,9 @@ if __name__ == "__main__":
         for info in information:
             information = info.split(' ; ')
             print(information[0].strip())
-            print(information[1])
+            print(information[1].strip())
+            print(information[2])
             print("\n")
             #print(info, "\n")
-    else:
-        print("We could not find information on that stock. Please make sure it is a valid stock")
+    # else:
+    #     print("We could not find information on that stock. Please make sure it is a valid stock")
