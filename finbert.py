@@ -1,11 +1,10 @@
 import torch
 from transformers import pipeline
-
 import requests
 from datetime import datetime, timedelta
 from collections import Counter
-
 import yfinance
+import praw
 
 api_key = '4867727998754629ad10c19521b7015e'
 
@@ -21,7 +20,7 @@ def fetch_news(ticker):
         'to': today.isoformat(),   
         'language': 'en',           
         'sortBy': 'relevancy',   
-        'pageSize': 100,              
+        'pageSize': 20,              
         'apiKey': api_key            
     }
 
@@ -40,7 +39,7 @@ def fetch_news(ticker):
 def stock_ticker_information(stock_ticker):
     stock_information = yfinance.Ticker(stock_ticker)
 
-    stock_news_articles = stock_information.get_news(count=100)
+    stock_news_articles = stock_information.get_news(count=15)
     if not stock_news_articles:
         print("There was no news found on this stock")
         return []
@@ -67,21 +66,65 @@ def stock_ticker_information(stock_ticker):
 
     return stock_article_info
 
+# Function to fetch Reddit posts related to a stock keyword
+def fetch_reddit_posts(keyword):
+    reddit = praw.Reddit(
+        client_id="hXa0VNF87XwdKlJEcwCuLA",
+        client_secret="hJaEUA7bJnYw7FgY-Nr1gWzKuWDFMg",
+        user_agent="AInvestor Hackathon project for LAHack"
+    )
+
+    subreddits = [
+        "wallstreetbets", "Superstonk", "options", "stocks", "StockMarket"
+    ]
+
+    posts = []
+
+    for sub_name in subreddits:
+        try:
+            subreddit = reddit.subreddit(sub_name)
+            for post in subreddit.search(query=keyword, sort="new", time_filter="month", limit=20):
+                if len(post.selftext) > 50 and post.score > 10:
+                    posts.append(f"{post.title} {post.selftext}")
+
+                if len(posts) >= 10:
+                    break
+        except Exception as e:
+            print(f"Error accessing subreddit {sub_name}: {e}")
+
+        if len(posts) >= 100:
+            break
+
+    return posts
+
 def sentiment(text):
-
     device = 0 if torch.cuda.is_available() else -1
-
     pipe = pipeline("text-classification", model="ProsusAI/finbert", device=device)
 
-    result = pipe(text)[0]['label']
+    chunk_size = 450
 
-    return result
+    if len(text) <= chunk_size:
+        result = pipe(text, truncation=True)[0]['label']
+        return result
+    
+    sentiments = []
+    for i in range(0, len(text), chunk_size):
+        chunk = text[i:i+chunk_size]
+        sentiment_result = pipe(chunk, truncation=True)[0]['label']
+        sentiments.append(sentiment_result)
+    
+    sentiment_counts = Counter(sentiments)
+    majority_sentiment, _ = sentiment_counts.most_common(1)[0]
+
+    return majority_sentiment
 
 if __name__ == "__main__":
-    ticker = input("Enter a stock ticker: ")
+
+    ticker = input("Enter a stock ticker: ").strip().upper()
 
     titles = fetch_news(ticker)
     information = stock_ticker_information(ticker)
+    posts = fetch_reddit_posts(ticker)
 
     all_sentiments = []
     for info in information:
@@ -90,7 +133,9 @@ if __name__ == "__main__":
     for title in titles:
         all_sentiments.append(sentiment(title))
 
+    for post in posts:
+        all_sentiments.append(sentiment(post))
+
     sentiment_counts = Counter(all_sentiments)
     majority_sentiment, count = sentiment_counts.most_common(1)[0]
-    print(majority_sentiment)
-
+    print("Majority Sentiment:", majority_sentiment)
