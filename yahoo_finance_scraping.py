@@ -28,7 +28,7 @@ def stock_ticker_information(stock_ticker):
         
         stock_article_titles.append(title)
         stock_article_summaries.append(summary)
-        stock_article_info.append({"TITLE: " + title + " ; SUMMARY: " + summary})
+        stock_article_info.append("TITLE: " + title + " ; SUMMARY: " + summary)
 
     return stock_article_info
     
@@ -37,8 +37,14 @@ if __name__ == "__main__":
     ticker = input("Please enter a stock ticker: ")
     information = stock_ticker_information(ticker)
     
+    
+    
     if information:
         for info in information:
-            print(info, "\n")
+            information = info.split(' ; ')
+            print(information[0].strip())
+            print(information[1])
+            print("\n")
+            #print(info, "\n")
     else:
         print("We could not find information on that stock. Please make sure it is a valid stock")
