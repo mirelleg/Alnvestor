@@ -14,6 +14,7 @@ def stock_ticker_information(stock_ticker):
     stock_article_titles = []
     stock_article_summaries = []
     stock_article_info = []
+    url_info = []
     i=0
     for article in stock_news_articles:
         title = ""
@@ -36,15 +37,18 @@ def stock_ticker_information(stock_ticker):
         
         stock_article_titles.append(title)
         stock_article_summaries.append(summary)
+        url_info.append(url)
+        
         stock_article_info.append("URL: " + url + " ; TITLE: " + title + " ; SUMMARY: " + summary)
 
-    return stock_article_info
+    first_5_url = url_info[:5]
+    return stock_article_info, first_5_url
     
 
 if __name__ == "__main__":
     ticker = input("Please enter a stock ticker: ")
-    information = stock_ticker_information(ticker)
-    
+    information, first_5_url = stock_ticker_information(ticker)
+    print(first_5_url)
     
     
     if information:
