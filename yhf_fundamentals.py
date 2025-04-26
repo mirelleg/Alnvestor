@@ -24,6 +24,11 @@ def fetch_yhf_fundamentals_summary(stock_ticker):
     market_cap = safe_get(info, 'marketCap')
     industry = safe_get(info, 'industry')
 
+    dividend_yield = safe_get(info, 'dividendYield')
+    return_on_equity = safe_get(info, 'returnOnEquity')
+    profit_margin = safe_get(info, 'profitMargins')
+    beta = safe_get(info, 'beta')
+
     fundamentals = {
         "P/E Ratio": pe_ratio,
         "EPS Growth (YoY)": eps_growth,
@@ -31,14 +36,20 @@ def fetch_yhf_fundamentals_summary(stock_ticker):
         "Debt-to-Equity Ratio": debt_to_equity,
         "Cash Position ($)": cash,
         "Market Cap ($)": market_cap,
-        "Industry": industry
+        "Industry": industry,
+        "Dividend Yield": format_percentage(dividend_yield),
+        "Return on Equity (ROE)": format_percentage(return_on_equity),
+        "Profit Margin": format_percentage(profit_margin),
+        "Beta (5Y Monthly)": beta
     }
 
     fundamentals_summary = (
         f"{stock_ticker} currently trades at a P/E ratio of {pe_ratio}. "
         f"EPS growth YoY is {format_percentage(eps_growth)}, and revenue growth YoY is {format_percentage(revenue_growth)}. "
         f"The company maintains a cash position of ${format_large_number(cash)} and has a debt-to-equity ratio of {debt_to_equity}. "
-        f"It operates in the {industry} industry."
+        f"It operates in the {industry} industry. "
+        f" Dividend yield is {format_percentage(dividend_yield)} and profit margin is {format_percentage(profit_margin)}. "
+        f"ROE stands at {format_percentage(return_on_equity)}, and the stock has a beta of {beta}."
     )
 
     return fundamentals, fundamentals_summary
@@ -80,5 +91,5 @@ def format_large_number(value):
 if __name__ == "__main__":
     ticker = input("Enter a stock ticker symbol (e.g., AAPL, MSFT, TSLA): ").upper()
     fundamentals, fundamentals_summary = fetch_yhf_fundamentals_summary(ticker)
-    #print(financial_data)
-    #print(summary)
+    #print(fundamentals)
+    #print(fundamentals_summary)
