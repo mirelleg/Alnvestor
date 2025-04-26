@@ -2,17 +2,33 @@ import streamlit as st
 import plotly.express as px
 import pandas as pd
 import yfinance
+from PIL import Image
 
 # Streamlit UI for visualizing the stock history
 stock_ticker = "AAPL"  # Example stock ticker
 
 # Adding a title to the main page
-st.image("ainvestor_logo.jpeg", width=150)
-st.markdown("<h1 style='font-size: 36px; color: white; text-align: center;'>Welcome to AInvestor!</h1>", unsafe_allow_html=True)
+
+# sidebar
+image_path = "ainvestor_logo.jpg"
+img = Image.open(image_path)
+
+col1, col2, col3 = st.columns([1.5, 1, 1.5])
+
+with col2:
+    st.image(img, width=200, caption="AI Investor Logo")
+
+st.markdown("""
+    <h1 style='font-size: 36px; color: white; text-align: center;'>Welcome to AInvestor!</h1>
+""", unsafe_allow_html=True)
+
 #st.subtitle("Here's your detailed breakdown of " + str(stock_ticker))
 st.markdown(f"<h2 style='font-size: 24px; color: white; text-align: center;'>Here's your detailed breakdown of {stock_ticker}</h2>", unsafe_allow_html=True)
 
-# Creating a sidebar
+
+st.sidebar.image(img, width=200)
+
+
 st.sidebar.title("Welcome to AI Investor!")
 st.sidebar.write("AI-driven stock market investment manager")
 
