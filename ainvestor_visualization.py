@@ -454,9 +454,7 @@ def stock_ticker_history_for_visualization(stock_ticker):
     stock_history['P/E Ratio'] = p_e_ratio
 
     stock_history['Dividends'] = stock_history['Date'].map(dividends) # NaN for non existing values
-
-    stock_history.to_csv(f'{stock_ticker}_visualization_data.csv')
-
+    
     return stock_info_dict
 
 def visualize_stock_history(history_dict, stock_ticker):
