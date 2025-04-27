@@ -407,7 +407,13 @@ def fetch_reddit_posts(keyword):
 
 def sentiment(text):
     device = 0 if torch.cuda.is_available() else -1
-    pipe = pipeline("text-classification", model="ProsusAI/finbert", device=device)
+
+    pipe = pipeline(
+        "text-classification", 
+        model="ProsusAI/finbert",
+        device=device,
+        torch_dtype=torch.float32    # 🔥 加这一行，确保是实tensor
+    )
 
     chunk_size = 450
 
