@@ -126,7 +126,7 @@ def visualize_stock_history(stock_history, stock_ticker):
         font=dict(size=12, color="mediumpurple")  # 小提示也改紫色
     )
 
-    fig.show()
+    return fig
 
 def fetch_stock_data_for_llm_and_visualization(stock_ticker, period="90d"):
     stock = yf.Ticker(stock_ticker)
@@ -196,9 +196,10 @@ def compute_rsi(series, period=14):
 if __name__ == "__main__":
 
     ticker = input("Please enter a stock ticker: ").upper()
-    history = stock_ticker_history_for_llm(ticker)
-    if history:
-        print(history)
+    stock_history, summary = fetch_stock_data_for_llm_and_visualization(ticker)
+    visualize_stock_history(stock_history, ticker)
+    if summary:
+        print(summary)
     else:
         print("We could not find information on that stock. Please make sure it is a valid stock")
 
