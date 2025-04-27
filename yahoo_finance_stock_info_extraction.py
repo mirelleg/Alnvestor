@@ -40,7 +40,7 @@ def visualize_stock_history(stock_history, stock_ticker):
         y=df['MA5'],
         mode='lines',
         name='MA5 (5-day Avg)',
-        line=dict(color='mediumpurple', dash='dash')   # 紫色
+        line=dict(color='lavender', dash='dash')   # 紫色
     ), row=1, col=1)
 
     # --- Row 2: Volume ---
@@ -56,7 +56,7 @@ def visualize_stock_history(stock_history, stock_ticker):
         x=df['Date'],
         y=df['RSI'],
         name="RSI",
-        line=dict(color='midnightblue')
+        line=dict(color='white')
     ), row=3, col=1)
 
     # --- RSI Reference Lines ---
@@ -79,7 +79,7 @@ def visualize_stock_history(stock_history, stock_ticker):
         height=950,
         title_text=f"{stock_ticker} Stock Overview (Last 90 Days)",
         template="plotly_white",
-        font=dict(color="midnightblue"),   # 整体字体也变蓝
+        font=dict(color="white"),   # 整体字体也变蓝
         legend_tracegroupgap=10,
         showlegend=True,
         updatemenus=[

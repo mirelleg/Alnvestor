@@ -133,6 +133,27 @@ with st.expander("", expanded=True):
     # Display Plotly chart in Streamlit
     st.plotly_chart(fig)
 
+with st.expander("", expanded=True):
+    # Custom large title inside the expander
+    st.markdown(f"""
+        <div style="background-color: #f4f4f4; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+            <h2 style="text-align: center; color: black;"> 💬 Recent Reddit Comment</h2>
+            <p style="text-align: center; color: black;">Check out recent Reddit comments!</p>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # Call the function to generate the plot and display the figure
+    #fig = visualize_stock_history(history_dict, stock_ticker)
+
+    stock_history, summary = fetch_stock_data_for_llm_and_visualization(stock_ticker)
+    fig = visualize_stock_history(stock_history, stock_ticker)
+
+    # Display Plotly chart in Streamlit
+    st.plotly_chart(fig)
+
+
+### NEWS ARTICLES
+    
 # Function to get 5 urls from Yahoo Finance API
 def top_urls(stock_ticker):
     stock_information = yfinance.Ticker(stock_ticker)
