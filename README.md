@@ -1,10 +1,18 @@
 # Alnvestor
 AI-Driven Financial Advisor
 
-Financial information is constantly being updated on the daily, which makes it even harder to filter through and find stock advice. Stock advisors sift through lots of financial information to make investment suggestions. Imagine speeding up this process by using AI to extract, process, conduct financial sentiment analysis and suggest the best choices for stocks. 
+In recent years, individual investors have faced an overwhelming amount of information when trying to make informed trading decisions. News articles, Reddit discussions, social media sentiment, stock fundamentals, and technical indicators all influence market moves — but analyzing these different signals manually is time-consuming, noisy, and error-prone.
 
-Introduce our product: AInvestor!
+We were inspired to create AInvestor because we believe that AI can serve as an intelligent co-pilot for retail investors, combining real-time data collection, sentiment analysis, financial fundamentals, and advanced LLM reasoning into a single, easy-to-use decision engine.
 
-Sifting through news articles, Reddit, Yahoo Finance data, our product outputs the best suggestion of either buying, holding or selling stocks using financial sentiment analysis, advanced reasoning and logical deduction. 
+Our product does the following:
+1. Aggregate multi-source market data (news, Reddit, Yahoo Finance, technical signals)
+2. Apply financial sentiment models (FinBERT) to quantify sentiment
+3. Leverage Gemini’s reasoning capabilities to synthesize all factors
+4. Generate a professional, explainable Buy/Sell/Hold recommendation
+
+Ultimately, we want AInvestor to be a smart and trustworthy assistant that helps everyday investors cut through the noise and make better investment decisions — quickly, reliably, and confidently.
+
+
 
 Track: Cold Hard Cache (FinTech)
