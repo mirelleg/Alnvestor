@@ -16,5 +16,3 @@ Ultimately, we want AInvestor to be a smart and trustworthy assistant that helps
 
 
 Track: Cold Hard Cache (FinTech)
-
-Check it out: ainvestor.streamlit.app
