@@ -126,7 +126,7 @@ def visualize_stock_history(stock_history, stock_ticker):
         font=dict(size=12, color="mediumpurple")  # 小提示也改紫色
     )
 
-    fig.show()
+    return fig
 
 def fetch_stock_data_for_llm_and_visualization(stock_ticker, period="90d"):
     stock = yf.Ticker(stock_ticker)
