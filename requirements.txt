@@ -3,8 +3,9 @@ plotly==6.0.1
 pandas==2.2.3
 yfinance==0.2.56
 requests==2.32.3
-transformers==4.36.2
-torch==2.2.2
+tokenizers==0.14.1
+transformers==4.35.2
+torch==2.0.1
 torchvision==0.17.2
 pillow==10.2.0
 google-ai-generativelanguage==0.6.15
