@@ -32,7 +32,7 @@ def visualize_stock_history(stock_history, stock_ticker):
         y=df['Close'],
         mode='lines',
         name='Close Price',
-        line=dict(color='midnightblue')   # 深蓝
+        line=dict(color='white')   # 深蓝
     ), row=1, col=1)
 
     fig.add_trace(go.Scatter(
