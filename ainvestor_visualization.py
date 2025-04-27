@@ -4,6 +4,8 @@ import pandas as pd
 import yfinance
 from PIL import Image
 from yahoo_finance_stock_info_extraction import visualize_stock_history, fetch_stock_data_for_llm_and_visualization
+from reddit_comments import fetch_recent_reddit_posts
+import html
 
 # Streamlit UI for visualizing the stock history
 stock_ticker = "AAPL"  # Example stock ticker
@@ -23,10 +25,6 @@ st.markdown("""
     <h1 style='font-size: 36px; color: white; text-align: center;'>Welcome to AInvestor!</h1>
 """, unsafe_allow_html=True)
 
-#st.subtitle("Here's your detailed breakdown of " + str(stock_ticker))
-st.markdown(f"<h2 style='font-size: 24px; color: white; text-align: center;'>Here's your detailed breakdown of {stock_ticker}</h2>", unsafe_allow_html=True)
-
-
 st.sidebar.image(img, width=200)
 
 
@@ -43,74 +41,13 @@ stock_ticker = st.sidebar.text_input("Please enter the stock ticker you would li
 if stock_ticker == "":
     stock_ticker = "AAPL"
 
+#st.subtitle("Here's your detailed breakdown of " + str(stock_ticker))
+st.markdown(f"<h2 style='font-size: 24px; color: white; text-align: center;'>Here's your detailed breakdown of {stock_ticker}</h2>", unsafe_allow_html=True)
+
 if stock_ticker:  # Check if the input is not empty
     stock = yfinance.Ticker(stock_ticker)  # Fetch the stock data for the entered ticker
     stock_data = stock.history(period="1mo")  # Get the stock data for the last month
     st.write(stock_data.tail())  # Display the stock data on the page
-
-# def stock_ticker_history_for_visualization(stock_ticker):
-#     stock_ticker = yfinance.Ticker(stock_ticker)
-
-#     stock_history = stock_ticker.history(period="3mo")
-#     stock_history = stock_history[['Open', 'High', 'Low', 'Close']].reset_index()
-#     dividends = stock_ticker.dividends
-#     info = stock_ticker.info
-#     market_cap = info.get('marketCap', None)
-#     p_e_ratio = info.get('trailingPE', None)
-
-#     stock_info_dict = {
-#         "history": stock_history,
-#         "dividends": dividends,
-#         "market cap": market_cap,
-#         "P/E ratio": p_e_ratio
-#     }
-
-#     stock_history['Market Cap'] = market_cap
-#     stock_history['P/E Ratio'] = p_e_ratio
-
-#     stock_history['Dividends'] = stock_history['Date'].map(dividends) # NaN for non existing values
-
-#     stock_history.to_csv(f'{stock_ticker}_visualization_data.csv')
-
-#     return stock_info_dict
-
-
-
-# # Sample history data for demonstration purposes (replace with actual data)
-# history_dict = {
-#     'history': pd.DataFrame({
-#         'Date': pd.date_range(start="2023-01-01", periods=60, freq='D'),
-#         'High': [100 + i for i in range(60)],
-#         'Low': [90 + i for i in range(60)]
-#     })
-# }
-
-# history_dict = stock_ticker_history_for_visualization(stock_ticker)
-
-# Function to visualize the stock history within a card
-# def visualize_stock_history(history_dict, stock_ticker):
-#     df = history_dict['history']
-
-#     # Create a line plot with Plotly
-#     fig = px.line(
-#         df,
-#         x="Date",
-#         y=["High", "Low"],
-#         title=f"{stock_ticker} High and Low Prices Over Last 3 Months",
-#         labels={"value": "Price (USD)", "Date": "Date", "variable": "Price Type"}
-#     )
-
-#     fig.update_layout(
-#         title_font_size=24,
-#         xaxis_title="Date",
-#         yaxis_title="Price (USD)",
-#         legend_title="Price Type",
-#         template="plotly_white",
-#         hovermode="x unified"    
-#     )
-
-#     return fig
-
 
 
 # Create a card-like container with a collapsible section (expandable)
@@ -137,19 +74,25 @@ with st.expander("", expanded=True):
     # Custom large title inside the expander
     st.markdown(f"""
         <div style="background-color: #f4f4f4; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
-            <h2 style="text-align: center; color: black;"> 💬 Recent Reddit Comment</h2>
+            <h2 style="text-align: center; color: black;"> 💬 Recent Reddit Comments</h2>
             <p style="text-align: center; color: black;">Check out recent Reddit comments!</p>
         </div>
     """, unsafe_allow_html=True)
 
-    # Call the function to generate the plot and display the figure
-    #fig = visualize_stock_history(history_dict, stock_ticker)
+    recent_posts = fetch_recent_reddit_posts(stock_ticker)
 
-    stock_history, summary = fetch_stock_data_for_llm_and_visualization(stock_ticker)
-    fig = visualize_stock_history(stock_history, stock_ticker)
+for idx, post in enumerate(recent_posts, 1):
+    with st.container():
+        st.markdown(f"""
+            <div style="background-color: #f4f4f4; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                <h4 style="color: black;">{post['title']}</h4>
+                <p style="color: black;">🕒 {post['created_time']} UTC</p>
+            </div>
+        """, unsafe_allow_html=True)
 
-    # Display Plotly chart in Streamlit
-    st.plotly_chart(fig)
+        # Separate line for text using st.write() (auto handles escaping)
+        st.write(post['text'])
+
 
 
 ### NEWS ARTICLES
@@ -621,6 +564,11 @@ def fetch_yhf_fundamentals_summary(stock_ticker):
     market_cap = safe_get(info, 'marketCap')
     industry = safe_get(info, 'industry')
 
+    dividend_yield = safe_get(info, 'dividendYield')
+    return_on_equity = safe_get(info, 'returnOnEquity')
+    profit_margin = safe_get(info, 'profitMargins')
+    beta = safe_get(info, 'beta')
+
     fundamentals = {
         "P/E Ratio": pe_ratio,
         "EPS Growth (YoY)": eps_growth,
@@ -628,14 +576,20 @@ def fetch_yhf_fundamentals_summary(stock_ticker):
         "Debt-to-Equity Ratio": debt_to_equity,
         "Cash Position ($)": cash,
         "Market Cap ($)": market_cap,
-        "Industry": industry
+        "Industry": industry,
+        "Dividend Yield": format_percentage(dividend_yield),
+        "Return on Equity (ROE)": format_percentage(return_on_equity),
+        "Profit Margin": format_percentage(profit_margin),
+        "Beta (5Y Monthly)": beta
     }
 
     fundamentals_summary = (
         f"{stock_ticker} currently trades at a P/E ratio of {pe_ratio}. "
         f"EPS growth YoY is {format_percentage(eps_growth)}, and revenue growth YoY is {format_percentage(revenue_growth)}. "
         f"The company maintains a cash position of ${format_large_number(cash)} and has a debt-to-equity ratio of {debt_to_equity}. "
-        f"It operates in the {industry} industry."
+        f"It operates in the {industry} industry. "
+        f" Dividend yield is {format_percentage(dividend_yield)} and profit margin is {format_percentage(profit_margin)}. "
+        f"ROE stands at {format_percentage(return_on_equity)}, and the stock has a beta of {beta}."
     )
 
     return fundamentals, fundamentals_summary
@@ -657,6 +611,7 @@ def format_percentage(value):
         return f"{value * 100:.2f}%" if isinstance(value, (int, float)) else "N/A"
     except Exception:
         return "N/A"
+
 
 def format_large_number(value):
     """
@@ -684,7 +639,8 @@ def get_ai_recommendation(stock_ticker, progress_bar):
             time.sleep(sleep_time)
         
     smooth_progress(0, 20, duration=1.5)
-    recent_trading = stock_ticker_history_for_llm(stock_ticker)
+    
+    stock_history, recent_trading = fetch_stock_data_for_llm_and_visualization(stock_ticker)
 
     smooth_progress(20, 70, duration=5)
     sentiment_result = sentiment_for_llm(stock_ticker)
