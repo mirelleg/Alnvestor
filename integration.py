@@ -45,7 +45,7 @@ Input:
 - Stock Ticker: {stock_ticker}
 - Sentiment Summary from media: {sentiment_result}
 - Recent Trading Summary: {recent_trading}
-- Fundamentals: {fundamentals}
+- Fundamenytals: {fundamentals}
 
 Task:
 Based on the information you are given, make an investment suggestion for the given stock. 
@@ -230,51 +230,71 @@ def visualize_stock_history(history_dict, stock_ticker):
     )
 
     fig.show()
+def fetch_stock_data_for_llm_and_visualization(stock_ticker, period="90d"):
+    stock = yfinance.Ticker(stock_ticker)
+    stock_history = stock.history(period=period)
 
+    if stock_history.empty or len(stock_history) < 5:
+        return None, None, None
 
-def stock_ticker_history_for_llm(stock_ticker):
-    stock_ticker = yfinance.Ticker(stock_ticker)
+    stock_history = stock_history[['Open', 'High', 'Low', 'Close', 'Volume']].reset_index()
 
-    stock_history = stock_ticker.history(period="5d")
-    stock_history = stock_history[['Open', 'High', 'Low', 'Close']]
-    dividends = stock_ticker.dividends
-    info = stock_ticker.info
-    market_cap = info.get('marketCap', None)
-    p_e_ratio = info.get('trailingPE', None)
-
-    # stock_info_dict = {
-    #     "history": stock_history,
-    #     "dividends": dividends,
-    #     "market cap": market_cap,
-    #     "P/E ratio": p_e_ratio
-    # }
-
-    stock_history['Market Cap'] = market_cap
-    stock_history['P/E Ratio'] = p_e_ratio
-
-    stock_history['Dividends'] = stock_history.index.to_series().map(dividends) # NaN for non existing values
-
-    stock_history.to_csv(f'{stock_ticker}_for_llm.csv')
-
-    # stock_history_table = []
-    stock_history_table = ""
-    stock_history_table += "Here are the prices across the past 5 days: " + "\n"
-    open_prices = "Open: "
-    for o in stock_history['Open']:
-        open_prices += str(o) + " "
-    high_prices = "High: "
-    for h in stock_history['High']:
-        high_prices += str(h) + " "
-    low_prices = "Low: "
-    for l in stock_history['Low']:
-        low_prices += str(l) + " "
-    close_prices = "Close: "
-    for c in stock_history['Close']:
-        close_prices += str(c) + " "
     
-    stock_history_table += open_prices + "\n" + high_prices + "\n" + low_prices + "\n" + close_prices
+    info = stock.info
 
-    return stock_history_table
+    # Calculate indicators
+    stock_history['Range (%)'] = ((stock_history['High'] - stock_history['Low']) / stock_history['Low']) * 100
+    stock_history['Volume Change (%)'] = stock_history['Volume'].pct_change() * 100
+    stock_history['RSI'] = compute_rsi(stock_history['Close'])
+    stock_history['MA5'] = stock_history['Close'].rolling(window=5).mean()
+    stock_history['MA30'] = stock_history['Close'].rolling(window=30).mean()
+
+
+    stock_history.to_csv(f'{stock_ticker}_visualization_data.csv', index=False)
+
+    # --- Prepare summary ---
+    recent = stock_history.tail(5)
+
+    open_prices = "Open: " + " ".join(f"{p:.2f}" for p in recent['Open'])
+    high_prices = "High: " + " ".join(f"{p:.2f}" for p in recent['High'])
+    low_prices = "Low: " + " ".join(f"{p:.2f}" for p in recent['Low'])
+    close_prices = "Close: " + " ".join(f"{p:.2f}" for p in recent['Close'])
+    volume = "Volume: " + " ".join(f"{int(v)}" for v in recent['Volume'])
+
+    stock_history_table = (
+        "Here are the prices and volumes over the past 5 consecutive trading days:\n" +
+        f"{open_prices}\n{high_prices}\n{low_prices}\n{close_prices}\n{volume}\n"
+    )
+
+    latest = recent.iloc[-1]
+
+    summary = stock_history_table + (
+        f"\nSummary for {stock_ticker}:\n"
+        f"- Average daily High/Low range over past 5 days: {recent['Range (%)'].mean():.2f}%\n"
+        f"- Latest trading day's volume: {int(latest['Volume'])}, "
+        f"change from previous day: {latest['Volume Change (%)']:.2f}%\n"
+        f"- Current MA5 (5-day moving average close): {latest['MA5']:.2f}\n"
+        f"- Current MA30 (30-day moving average close): {latest['MA30']:.2f}\n"
+        f"- Highest price over last 90 days: {stock_history['High'].max():.2f}\n"
+        f"- Lowest price over last 90 days: {stock_history['Low'].min():.2f}\n"
+        f"- Average volume over last 90 days: {int(stock_history['Volume'].mean())}\n"
+        f"- Current RSI: {latest['RSI']:.2f}, indicating "
+        f"{'overbought' if latest['RSI'] > 70 else 'oversold' if latest['RSI'] < 30 else 'neutral'} market conditions."
+    )
+
+    return stock_history, summary
+
+
+def compute_rsi(series, period=14):
+    """Compute Relative Strength Index (RSI)"""
+    delta = series.diff()
+    gain = (delta.where(delta > 0, 0)).rolling(window=period, min_periods=period).mean()
+    loss = (-delta.where(delta < 0, 0)).rolling(window=period, min_periods=period).mean()
+    rs = gain / loss
+    rsi = 100 - (100 / (1 + rs))
+    return rsi
+
+    
 
 def sentiment_for_llm(ticker):
     
@@ -296,13 +316,100 @@ def sentiment_for_llm(ticker):
     majority_sentiment, count = sentiment_counts.most_common(1)[0]
     return majority_sentiment
 
+def fetch_yhf_fundamentals_summary(stock_ticker):
+    """
+    Fetch key financial metrics from Yahoo Finance for a given stock ticker.
+    
+    Returns:
+    - fundamentals: dict containing key metrics
+    - fundamentals_summary: str describing financial highlights
+    """
+    stock = yfinance.Ticker(stock_ticker)
+    try:
+        info = stock.info  # Try fetching stock info
+    except Exception as e:
+        print(f"Error fetching info for {stock_ticker}: {e}")
+        return {}, "Failed to retrieve stock information."
+
+    # Safe extraction with fallback
+    pe_ratio = safe_get(info, 'trailingPE')
+    eps_growth = safe_get(info, 'earningsQuarterlyGrowth')
+    revenue_growth = safe_get(info, 'revenueGrowth')
+    debt_to_equity = safe_get(info, 'debtToEquity')
+    cash = safe_get(info, 'totalCash')
+    market_cap = safe_get(info, 'marketCap')
+    industry = safe_get(info, 'industry')
+
+    dividend_yield = safe_get(info, 'dividendYield')
+    return_on_equity = safe_get(info, 'returnOnEquity')
+    profit_margin = safe_get(info, 'profitMargins')
+    beta = safe_get(info, 'beta')
+
+    fundamentals = {
+        "P/E Ratio": pe_ratio,
+        "EPS Growth (YoY)": eps_growth,
+        "Revenue Growth (YoY)": revenue_growth,
+        "Debt-to-Equity Ratio": debt_to_equity,
+        "Cash Position ($)": cash,
+        "Market Cap ($)": market_cap,
+        "Industry": industry,
+        "Dividend Yield": format_percentage(dividend_yield),
+        "Return on Equity (ROE)": format_percentage(return_on_equity),
+        "Profit Margin": format_percentage(profit_margin),
+        "Beta (5Y Monthly)": beta
+    }
+
+    fundamentals_summary = (
+        f"{stock_ticker} currently trades at a P/E ratio of {pe_ratio}. "
+        f"EPS growth YoY is {format_percentage(eps_growth)}, and revenue growth YoY is {format_percentage(revenue_growth)}. "
+        f"The company maintains a cash position of ${format_large_number(cash)} and has a debt-to-equity ratio of {debt_to_equity}. "
+        f"It operates in the {industry} industry. "
+        f" Dividend yield is {format_percentage(dividend_yield)} and profit margin is {format_percentage(profit_margin)}. "
+        f"ROE stands at {format_percentage(return_on_equity)}, and the stock has a beta of {beta}."
+    )
+
+    return fundamentals, fundamentals_summary
+
+def safe_get(dictionary, key):
+    """
+    Safely get a value from a dictionary. Return 'N/A' if not found.
+    """
+    value = dictionary.get(key, 'N/A')
+    if value is None:
+        return 'N/A'
+    return value
+
+def format_percentage(value):
+    """
+    Format a float into a percentage string. Return 'N/A' if invalid.
+    """
+    try:
+        return f"{value * 100:.2f}%" if isinstance(value, (int, float)) else "N/A"
+    except Exception:
+        return "N/A"
+
+def format_large_number(value):
+    """
+    Format large numbers into readable strings. Return 'N/A' if invalid.
+    """
+    try:
+        if isinstance(value, (int, float)):
+            if value >= 1e9:
+                return f"{value / 1e9:.2f}B"
+            elif value >= 1e6:
+                return f"{value / 1e6:.2f}M"
+            else:
+                return f"{value:,.0f}"
+        return "N/A"
+    except Exception:
+        return "N/A" 
 
 if __name__ == "__main__":
     ticker = input("Enter a stock ticker: ").strip().upper()
-    recent_trading = stock_ticker_history_for_llm(ticker)
+    stock_history, recent_trading = fetch_stock_data_for_llm_and_visualization(ticker)
+    fundamentals, fundamentals_summary = fetch_yhf_fundamentals_summary(ticker)
     sentiment_result = sentiment_for_llm(ticker)
-    fundamentals = ""
-    suggestion = generate_investment_suggestion(ticker, sentiment_result, recent_trading, fundamentals)
+    suggestion = generate_investment_suggestion(ticker, sentiment_result, recent_trading, fundamentals_summary)
     
     if suggestion:
         print(json.dumps(suggestion, indent=4))
