@@ -19,7 +19,7 @@ def fetch_reddit_posts(keyword):
             subreddit = reddit.subreddit(sub_name)
             for post in subreddit.search(query=keyword, sort="new", time_filter="month", limit=100):
                 if len(post.selftext) > 50 and post.score > 10:
-                    posts.append(f"{post.title} {post.selftext}")
+                    posts.append(f"{post.title}$$${post.selftext}")
 
                 if len(posts) >= 100:
                     break

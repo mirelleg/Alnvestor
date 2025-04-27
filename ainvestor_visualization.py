@@ -3,6 +3,7 @@ import plotly.express as px
 import pandas as pd
 import yfinance
 from PIL import Image
+from yahoo_finance_stock_info_extraction import visualize_stock_history, fetch_stock_data_for_llm_and_visualization
 
 # Streamlit UI for visualizing the stock history
 stock_ticker = "AAPL"  # Example stock ticker
@@ -36,7 +37,7 @@ st.sidebar.write("AI-driven stock market investment manager")
 stock_ticker = "AAPL"  # Example stock ticker
 
 # You can also add other widgets to the sidebar, for example:
-stock_ticker = st.sidebar.text_input("Please enter the stock ticker you would like to learn more about:", placeholder="AAPL")
+stock_ticker = st.sidebar.text_input("Please enter the stock ticker you would like to learn more about:", placeholder="ex: AAPL")
 #st.write(f"Text input from sidebar: {sidebar_text}")
 
 if stock_ticker == "":
@@ -47,31 +48,32 @@ if stock_ticker:  # Check if the input is not empty
     stock_data = stock.history(period="1mo")  # Get the stock data for the last month
     st.write(stock_data.tail())  # Display the stock data on the page
 
-def stock_ticker_history_for_visualization(stock_ticker):
-    stock_ticker = yfinance.Ticker(stock_ticker)
+# def stock_ticker_history_for_visualization(stock_ticker):
+#     stock_ticker = yfinance.Ticker(stock_ticker)
 
-    stock_history = stock_ticker.history(period="3mo")
-    stock_history = stock_history[['Open', 'High', 'Low', 'Close']].reset_index()
-    dividends = stock_ticker.dividends
-    info = stock_ticker.info
-    market_cap = info.get('marketCap', None)
-    p_e_ratio = info.get('trailingPE', None)
+#     stock_history = stock_ticker.history(period="3mo")
+#     stock_history = stock_history[['Open', 'High', 'Low', 'Close']].reset_index()
+#     dividends = stock_ticker.dividends
+#     info = stock_ticker.info
+#     market_cap = info.get('marketCap', None)
+#     p_e_ratio = info.get('trailingPE', None)
 
-    stock_info_dict = {
-        "history": stock_history,
-        "dividends": dividends,
-        "market cap": market_cap,
-        "P/E ratio": p_e_ratio
-    }
+#     stock_info_dict = {
+#         "history": stock_history,
+#         "dividends": dividends,
+#         "market cap": market_cap,
+#         "P/E ratio": p_e_ratio
+#     }
 
-    stock_history['Market Cap'] = market_cap
-    stock_history['P/E Ratio'] = p_e_ratio
+#     stock_history['Market Cap'] = market_cap
+#     stock_history['P/E Ratio'] = p_e_ratio
 
-    stock_history['Dividends'] = stock_history['Date'].map(dividends) # NaN for non existing values
+#     stock_history['Dividends'] = stock_history['Date'].map(dividends) # NaN for non existing values
 
-    stock_history.to_csv(f'{stock_ticker}_visualization_data.csv')
+#     stock_history.to_csv(f'{stock_ticker}_visualization_data.csv')
 
-    return stock_info_dict
+#     return stock_info_dict
+
 
 
 # # Sample history data for demonstration purposes (replace with actual data)
@@ -83,31 +85,31 @@ def stock_ticker_history_for_visualization(stock_ticker):
 #     })
 # }
 
-history_dict = stock_ticker_history_for_visualization(stock_ticker)
+# history_dict = stock_ticker_history_for_visualization(stock_ticker)
 
 # Function to visualize the stock history within a card
-def visualize_stock_history(history_dict, stock_ticker):
-    df = history_dict['history']
+# def visualize_stock_history(history_dict, stock_ticker):
+#     df = history_dict['history']
 
-    # Create a line plot with Plotly
-    fig = px.line(
-        df,
-        x="Date",
-        y=["High", "Low"],
-        title=f"{stock_ticker} High and Low Prices Over Last 3 Months",
-        labels={"value": "Price (USD)", "Date": "Date", "variable": "Price Type"}
-    )
+#     # Create a line plot with Plotly
+#     fig = px.line(
+#         df,
+#         x="Date",
+#         y=["High", "Low"],
+#         title=f"{stock_ticker} High and Low Prices Over Last 3 Months",
+#         labels={"value": "Price (USD)", "Date": "Date", "variable": "Price Type"}
+#     )
 
-    fig.update_layout(
-        title_font_size=24,
-        xaxis_title="Date",
-        yaxis_title="Price (USD)",
-        legend_title="Price Type",
-        template="plotly_white",
-        hovermode="x unified"    
-    )
+#     fig.update_layout(
+#         title_font_size=24,
+#         xaxis_title="Date",
+#         yaxis_title="Price (USD)",
+#         legend_title="Price Type",
+#         template="plotly_white",
+#         hovermode="x unified"    
+#     )
 
-    return fig
+#     return fig
 
 
 
@@ -123,8 +125,11 @@ with st.expander("", expanded=True):
     """, unsafe_allow_html=True)
 
     # Call the function to generate the plot and display the figure
-    fig = visualize_stock_history(history_dict, stock_ticker)
-    
+    #fig = visualize_stock_history(history_dict, stock_ticker)
+
+    stock_history, summary = fetch_stock_data_for_llm_and_visualization(stock_ticker)
+    fig = visualize_stock_history(stock_history, stock_ticker)
+
     # Display Plotly chart in Streamlit
     st.plotly_chart(fig)
 
@@ -681,7 +686,7 @@ with st.expander("", expanded=True):
     st.markdown(f"""
          <div style="background-color: #f4f4f4; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
             <img src="https://upload.wikimedia.org/wikipedia/commons/8/8a/Google_Gemini_logo.svg" alt="Gemini Logo" style="width:60px;height:auto;margin-bottom:10px;">
-            <h2 style="color: black;"> Gemini AI Recommendation for {stock_ticker}</h2>
+            <h2 style="color: black;"> Gemini AI Recommendation for {stock_ticker} Stock </h2>
         </div>
     """, unsafe_allow_html=True)
 
