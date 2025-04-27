@@ -3,7 +3,7 @@ plotly==6.0.1
 pandas==2.2.3
 yfinance==0.2.56
 requests==2.32.3
-transformers==4.45.2
+transformers==4.36.2
 torch==2.2.2
 torchvision==0.17.2
 pillow==10.2.0
