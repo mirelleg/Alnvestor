@@ -5,8 +5,11 @@ from datetime import datetime, timedelta
 from collections import Counter
 import yfinance
 import praw
+from dotenv import load_dotenv
+import os
 
-api_key = '4867727998754629ad10c19521b7015e'
+load_dotenv()
+api_key = os.getenv('API_KEY')
 
 def fetch_news(ticker):
     today = datetime.today().date()
