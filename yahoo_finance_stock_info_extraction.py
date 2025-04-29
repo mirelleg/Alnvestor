@@ -137,8 +137,7 @@ def fetch_stock_data_for_llm_and_visualization(stock_ticker, period="90d"):
 
     stock_history = stock_history[['Open', 'High', 'Low', 'Close', 'Volume']].reset_index()
 
-    
-    info = stock.info
+
 
     # Calculate indicators
     stock_history['Range (%)'] = ((stock_history['High'] - stock_history['Low']) / stock_history['Low']) * 100
