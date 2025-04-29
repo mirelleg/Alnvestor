@@ -145,11 +145,11 @@ def top_urls_info(stock_ticker):
             thumbnail = article['content']['thumbnail']  # Assuming 'thumbnail' is available
         except KeyError:
             thumbnail = ""  # in case the thumbnail is missing
-
-        url_info.append(url)
-        url_titles.append(title)
-        url_summaries.append(summary)
-        url_thumbnails.append(thumbnail)
+        if (url != '') and (title != '') and (summary != '') and (thumbnail != ''):
+            url_info.append(url)
+            url_titles.append(title)
+            url_summaries.append(summary)
+            url_thumbnails.append(thumbnail)
     return url_info, url_titles, url_summaries, url_thumbnails
 
 # A second card for the top 5 urls
@@ -158,7 +158,7 @@ top_5_urls, url_titles, url_summaries, url_thumbnails = top_urls_info(stock_tick
 with st.expander("",expanded=True):
     # You can use st.markdown inside the expander to add a custom header with larger font
     st.markdown(
-        f"<h1 style='font-size: 30px; font-weight: bold; color: #4CAF50;'>📰 Top 5 News Links for {stock_ticker}</h1>",
+        f"<h1 style='font-size: 30px; font-weight: bold; color: #4CAF50;'>📰 Top News Links for {stock_ticker}</h1>",
         unsafe_allow_html=True
     )
     st.markdown("""
@@ -214,28 +214,32 @@ with st.expander("",expanded=True):
         """, unsafe_allow_html=True)
 
     # Create each card individually
-    for i in range(5):
-        url = top_5_urls[i]
-        title = url_titles[i]
-        description = url_summaries[i]
-        thumbnail = url_thumbnails[i]['originalUrl']
-
-        if not thumbnail:
-            thumbnail = "https://via.placeholder.com/700x200.png?text=No+Image+Available"
-        
-        # Create HTML for a single card
-        card_html = f"""
-        <div class="article-card">
-            <div class="card-image" style="background-image: url('{thumbnail}');"></div>
-            <div class="card-content">
-                <h3 class="card-title">{title}</h3>
-                <p class="card-description">{description}</p>
-                <a href="{url}" target="_blank" class="card-button">Go to Article</a>
+    if len(url_titles) != 0:
+        for i in range(len(url_titles)):
+            url = top_5_urls[i]
+            print("urls: ", url)
+            title = url_titles[i]
+            description = url_summaries[i]
+            print("url thumbnails: ","\n")
+            print(url_thumbnails[i],"\n")
+            if url_thumbnails[i] is None:
+                thumbnail = "https://via.placeholder.com/700x200.png?text=No+Image+Available"
+            else:
+                thumbnail = url_thumbnails[i]['originalUrl']
+            
+            # Create HTML for a single card
+            card_html = f"""
+            <div class="article-card">
+                <div class="card-image" style="background-image: url('{thumbnail}');"></div>
+                <div class="card-content">
+                    <h3 class="card-title">{title}</h3>
+                    <p class="card-description">{description}</p>
+                    <a href="{url}" target="_blank" class="card-button">Go to Article</a>
+                </div>
             </div>
-        </div>
-        """
-        
-        st.markdown(card_html, unsafe_allow_html=True)
+            """
+            
+            st.markdown(card_html, unsafe_allow_html=True)
 
     # Close the container
     st.markdown("</div>", unsafe_allow_html=True)
