@@ -6,6 +6,17 @@ from PIL import Image
 from yahoo_finance_stock_info_extraction import visualize_stock_history, fetch_stock_data_for_llm_and_visualization
 from reddit_comments import fetch_recent_reddit_posts
 import html
+import torch
+#from transformers import pipeline
+from utils import sentiment
+import requests
+from datetime import datetime, timedelta
+from collections import Counter
+import praw
+import google.generativeai as genai
+import json
+import re
+import time
 
 # Streamlit UI for visualizing the stock history
 stock_ticker = "AAPL"  # Example stock ticker
@@ -248,16 +259,6 @@ with st.expander("",expanded=True):
 
 # Gemini AI Integration file recommendation code here
 
-import torch
-from transformers import pipeline
-import requests
-from datetime import datetime, timedelta
-from collections import Counter
-import praw
-import google.generativeai as genai
-import json
-import re
-import time
 
 def extract_json_from_response(response_text):
     """
@@ -409,32 +410,32 @@ def fetch_reddit_posts(keyword):
 
     return posts
 
-def sentiment(text):
-    device = 0 if torch.cuda.is_available() else -1
+# def sentiment(text):
+#     device = 0 if torch.cuda.is_available() else -1
 
-    pipe = pipeline(
-        "text-classification", 
-        model="ProsusAI/finbert",
-        device=device,
-        torch_dtype=torch.float32    # 🔥 加这一行，确保是实tensor
-    )
+#     pipe = pipeline(
+#         "text-classification", 
+#         model="ProsusAI/finbert",
+#         device=device,
+#         torch_dtype=torch.float32    # 🔥 加这一行，确保是实tensor
+#     )
 
-    chunk_size = 450
+#     chunk_size = 450
 
-    if len(text) <= chunk_size:
-        result = pipe(text, truncation=True)[0]['label']
-        return result
+#     if len(text) <= chunk_size:
+#         result = pipe(text, truncation=True)[0]['label']
+#         return result
     
-    sentiments = []
-    for i in range(0, len(text), chunk_size):
-        chunk = text[i:i+chunk_size]
-        sentiment_result = pipe(chunk, truncation=True)[0]['label']
-        sentiments.append(sentiment_result)
+#     sentiments = []
+#     for i in range(0, len(text), chunk_size):
+#         chunk = text[i:i+chunk_size]
+#         sentiment_result = pipe(chunk, truncation=True)[0]['label']
+#         sentiments.append(sentiment_result)
     
-    sentiment_counts = Counter(sentiments)
-    majority_sentiment, _ = sentiment_counts.most_common(1)[0]
+#     sentiment_counts = Counter(sentiments)
+#     majority_sentiment, _ = sentiment_counts.most_common(1)[0]
 
-    return majority_sentiment
+#     return majority_sentiment
 
 
 def stock_ticker_history_for_visualization(stock_ticker):
