@@ -1,4 +1,15 @@
-# Alnvestor
+---
+title: AInvestor
+emoji: {{emoji}}
+colorFrom: {{colorFrom}}
+colorTo: {{colorTo}}
+sdk: {{sdk}}
+sdk_version: "{{sdkVersion}}"
+app_file: ainvestor_visualization.py
+pinned: false
+---
+
+
 AI-Driven Financial Advisor
 
 In recent years, individual investors have faced an overwhelming amount of information when trying to make informed trading decisions. News articles, Reddit discussions, social media sentiment, stock fundamentals, and technical indicators all influence market moves — but analyzing these different signals manually is time-consuming, noisy, and error-prone.
