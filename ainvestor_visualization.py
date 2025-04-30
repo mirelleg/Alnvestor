@@ -17,6 +17,12 @@ import google.generativeai as genai
 import json
 import re
 import time
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+finbert_api_key = os.getenv('NEWS_API_KEY')
+gemini_api_key = os.getenv('GEMINI_API_KEY')
 
 # Streamlit UI for visualizing the stock history
 stock_ticker = "AAPL"  # Example stock ticker
@@ -281,8 +287,6 @@ def extract_json_from_response(response_text):
     else:
         raise ValueError("No valid JSON object found in response.")
 
-gemini_api_key = "AIzaSyADBstQ9m7ZX-JOCSJBKy82S_24FIy0StQ"
-
 def generate_investment_suggestion(stock_ticker, sentiment_result, recent_trading, fundamentals):
     """
     Generate investment suggestion using Gemini model based on sentiment and financial data.
@@ -318,8 +322,6 @@ Format your output strictly in JSON as:
         print("Raw response:", response.text)
         return None
 
-
-finbert_api_key = '4867727998754629ad10c19521b7015e'
 
 def fetch_news(ticker):
     today = datetime.today().date()
