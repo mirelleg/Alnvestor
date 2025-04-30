@@ -8,7 +8,7 @@ sdk_version: 1.34.0
 app_file: ainvestor_visualization.py
 pinned: false
 ---
-
+Try it out here: https://huggingface.co/spaces/msgeorge/AInvestor
 
 AI-Driven Financial Advisor
 
