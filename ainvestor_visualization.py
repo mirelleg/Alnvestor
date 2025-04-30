@@ -588,7 +588,7 @@ def fetch_yhf_fundamentals_summary(stock_ticker):
         "Cash Position ($)": cash,
         "Market Cap ($)": market_cap,
         "Industry": industry,
-        "Dividend Yield": format_percentage(dividend_yield),
+        "Dividend Yield": dividend_yield,
         "Return on Equity (ROE)": format_percentage(return_on_equity),
         "Profit Margin": format_percentage(profit_margin),
         "Beta (5Y Monthly)": beta
@@ -599,7 +599,7 @@ def fetch_yhf_fundamentals_summary(stock_ticker):
         f"EPS growth YoY is {format_percentage(eps_growth)}, and revenue growth YoY is {format_percentage(revenue_growth)}. "
         f"The company maintains a cash position of ${format_large_number(cash)} and has a debt-to-equity ratio of {debt_to_equity}. "
         f"It operates in the {industry} industry. "
-        f" Dividend yield is {format_percentage(dividend_yield)} and profit margin is {format_percentage(profit_margin)}. "
+        f" Dividend yield is {dividend_yield} and profit margin is {format_percentage(profit_margin)}. "
         f"ROE stands at {format_percentage(return_on_equity)}, and the stock has a beta of {beta}."
     )
 
