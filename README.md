@@ -1,10 +1,10 @@
 ---
 title: AInvestor
-emoji: {{emoji}}
-colorFrom: {{colorFrom}}
-colorTo: {{colorTo}}
-sdk: {{sdk}}
-sdk_version: "{{sdkVersion}}"
+emoji: 🚀
+colorFrom: indigo
+colorTo: pink
+sdk: streamlit
+sdk_version: 1.34.0
 app_file: ainvestor_visualization.py
 pinned: false
 ---
