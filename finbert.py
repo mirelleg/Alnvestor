@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
-api_key = os.getenv('API_KEY')
+api_key = os.getenv('NEWS_API_KEY')
 
 def fetch_news(ticker):
     today = datetime.today().date()
