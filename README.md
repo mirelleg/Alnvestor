@@ -23,7 +23,3 @@ Our product does the following:
 4. Generate a professional, explainable Buy/Sell/Hold recommendation
 
 Ultimately, we want AInvestor to be a smart and trustworthy assistant that helps everyday investors cut through the noise and make better investment decisions — quickly, reliably, and confidently.
-
-
-
-Track: Cold Hard Cache (FinTech)
